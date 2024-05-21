@@ -53,11 +53,21 @@ def create_note(request):
     return Response()
 
 
-@api_view(['POST'])
+@api_view(['POST']) 
 def create_user(request):
     if request.method == 'POST':
-        username = request.data.get('username')
-        ...
+        id=request.data["id"]
+        user_name=request.data['user_name']
+        first_name=request.data['first_name']
+        last_name = request.data['last_name']
+        email = request.data['email']
+        password = request.data['password']
+        
+        user = User.objects.get(id=id)
+        user = Note.objects.create(id=id,user_name=user_name,first_name=first_name,last_name=last_name,email=email,password=password)
+        user.save()
+        return Response(data='Create', status=status.HTTP_201_CREATED)
+    return Response()
 
 
 @api_view(['GET', 'PATCH', 'DELETE'])
@@ -91,4 +101,50 @@ def note_detail(request, id):
 
     elif request.method == 'DELETE':
         note.delete()
+        return Response(data='Deleted', status=status.HTTP_204_NO_CONTENT)
+@api_view(['GET', 'PATCH', 'DELETE'])
+def user_detail(request, id):
+    try:
+        user = User.objects.get(id=id)
+    except:
+        user= None
+
+    if not user:
+        return Response(data={"detail": "No such note with this ID"})
+
+    if request.method == 'GET':
+        user = UserSerializer(instance=user, many=False).data
+        return Response(data=user)
+
+    elif request.method == 'PATCH':
+        id = request.data.get('title') or None
+        user_name = request.data.get('body') or None
+        email = request.data.get('title') or None
+        first_name = request.data.get('body') or None
+        last_name = request.data.get('title') or None
+
+        if id:
+            user.id = id
+
+        if user_name:
+            user.user_name = user_name
+
+        if email:
+            user.email = email
+
+        if first_name:
+            user.first_name = first_name
+
+        if last_name:
+            user.last_name = last_name
+
+
+
+        user.save()
+        user = NoteSerializer(instance=user, many=False).data
+
+        return Response(data=user)
+
+    elif request.method == 'DELETE':
+        user.delete()
         return Response(data='Deleted', status=status.HTTP_204_NO_CONTENT)
